@@ -86,7 +86,7 @@ function 拆节(html) {
   return 节
 }
 
-/** API 词条 → 数据库行 */
+/** API 词条 → 数据库行（字段一律兜成字符串：站点偶尔会缺 title/aliases，node:sqlite 不收 undefined） */
 function 转行(item) {
   const 节 = 拆节(item.content_html)
   const 取 = (名) => (节.find((s) => s.标题 === 名)?.内容 || '').trim()
@@ -94,16 +94,17 @@ function 转行(item) {
     .filter((s) => s.标题 !== '来源' && s.标题 !== '用法')
     .map((s) => (s.内容 ? `${s.标题}\n${s.内容}` : s.标题))
     .join('\n\n')
+  const 文本 = (v) => (v == null ? '' : String(v))
   return {
-    title: item.title,
-    slug: item.slug || item.title,
-    tags: (item.tags || []).join('、'),
+    title: 文本(item.title).trim(),
+    slug: 文本(item.slug).trim() || 文本(item.title).trim(),
+    tags: Array.isArray(item.tags) ? item.tags.map(文本).join('、') : 文本(item.tags),
     usage: 取('用法'),
     origin: 取('来源'),
     other: 其他,
-    summary: item.summary || '',
-    aliases: (item.aliases || []).join(','),
-    updated_at: item.updated_at || '',
+    summary: 文本(item.summary),
+    aliases: Array.isArray(item.aliases) ? item.aliases.map(文本).join(',') : 文本(item.aliases),
+    updated_at: 文本(item.updated_at),
   }
 }
 
@@ -212,7 +213,9 @@ let 失败 = 0
 for (let i = 0; i < 目标.length; i++) {
   const it = 目标[i]
   try {
-    详情.push(await 取JSON('/' + encodeURIComponent(it.slug)))
+    // 详情接口有两种形状：老的扁平词条，新的 { schema_version, item }——统一取 item
+    const 体 = await 取JSON('/' + encodeURIComponent(it.slug))
+    详情.push(体 && 体.item && typeof 体.item === 'object' ? 体.item : 体)
   } catch (e) {
     失败++
     console.log(`  失败：${it.title}（${e.message}）`)
@@ -245,6 +248,10 @@ db.exec('BEGIN')
 try {
   for (const item of 详情) {
     const 行 = 转行(item)
+    if (!行.title) {
+      console.log('跳过没有标题的详情：' + JSON.stringify(item).slice(0, 160))
+      continue
+    }
     const 旧 = db.prepare('SELECT * FROM memes WHERE title = ?').get(行.title)
     if (!旧) {
       db.prepare(
