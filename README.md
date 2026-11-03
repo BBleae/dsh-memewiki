@@ -6,7 +6,7 @@
 
 来源：AstrBot 插件 `astrbot_plugin_memewiki`（作者 in1t1a1）。原仓库已删除，所以这里不放链接——如果有人点进来发现 404，那是那个仓库，不是这个。
 
-内置 6668 条网络梗词条，离线可用，不联网、零依赖（只用 Node 自带的 `node:sqlite`）。
+内置 6697 条网络梗词条，离线可用，不联网、零依赖（只用 Node 自带的 `node:sqlite`）。
 
 当你问一句「XX 是什么梗」时，它会在模型看到这句话**之前**就把对应词条查好塞进上下文，让模型直接接梗；同时提供一个 `search_meme_wiki` 工具，让模型自己想查的时候也能查。
 
@@ -78,12 +78,25 @@ CREATE TABLE memes (
   tags    TEXT,              -- 标签，逗号分隔
   usage   TEXT,              -- 怎么用 / 怎么接
   origin  TEXT,              -- 出处
-  other   TEXT,
-  summary TEXT               -- 释义
+  other   TEXT,              -- 其他分节（演化 / 相关 / 备注等）
+  summary TEXT,              -- 释义
+  aliases TEXT               -- 别名，逗号分隔
 );
 ```
 
-词库来自原版插件的 `data/memes.db`（6668 条，构建于 2026-10-26），原数据由 [cnmeme.wiki](https://cnmeme.wiki) 整理。
+词库来自 [cnmeme.wiki](https://cnmeme.wiki) 的公开 API（来源、用法、标签、别名与摘要），2026-11-03 同步至 **6697 条**，对应站点截至 2026-11-02 的公开词条。最初 6668 条来自原版插件随包分发的 `data/memes.db`（2026-10-26 构建）。
+
+### 更新词库
+
+梗是会长出来的。想再同步一次，跑（需要联网，只读站点的公开 API）：
+
+```bash
+node scripts/sync-cnmeme.mjs               # 补新词条 + 同步被站点改过的词条
+node scripts/sync-cnmeme.mjs --dry-run     # 只报告会改什么，不写库
+node scripts/sync-cnmeme.mjs --no-existing # 只补新词条，不动已有条目
+```
+
+脚本会先翻完全站公开列表（约 4–5 分钟），再只拉有变化的详情；写库前自动备份成 `data/memes.db.bak-时间戳`。你在设置页手动填的 `aliases` 不会被冲掉，正文为空时也保留本地旧值。跑完 `meta.built_at` / `count` 会更新，设置页的总条数跟着变。
 
 ## 与原版的差异
 
@@ -112,7 +125,7 @@ CREATE TABLE memes (
 
 1. **隐私**：联网意味着把用户的聊天片段发到第三方，梗查询往往带着上下文；
 2. **稳定**：外部 API 挂了就多一次失败路径，还要处理超时、缓存、节流；
-3. **够用**：6668 条覆盖了绝大多数常见梗，查不到时模型说「不知道」比编一个更安全。
+3. **够用**：6697 条覆盖了绝大多数常见梗，查不到时模型说「不知道」比编一个更安全。
 
 需要联网版的话，可以在设置页把「自动思考梗」关掉，改用 `search_meme_wiki` 工具自行决定何时查（工具同样只查本地库）。
 
