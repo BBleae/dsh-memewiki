@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6 — 2026-11-03
+
+### 修复
+
+- **干净环境里装不上**：`@deepseek-ai/dsh-tools` 这条 peer 依赖没有标成可选，pnpm 会真的去 npm 上装它，而它依赖的几个内部包（`@deepseek-ai/dsh-type-meta` 等）没公开发布，于是报 `ERR_PNPM_FETCH_404` 整个安装失败。现在加了 `peerDependenciesMeta` 把它标成可选，跟 `dsh-fish-memory` 的做法一致。
+
 ## 0.1.5 — 2026-11-03
 
 ### 修正
