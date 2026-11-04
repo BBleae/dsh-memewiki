@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 ## 0.1.18 — 2026-11-04
 

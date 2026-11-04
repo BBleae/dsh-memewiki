@@ -1,4 +1,4 @@
-﻿# dsh-memewiki
+# dsh-memewiki
 
 给 [DSH](https://dsh.deepseek.com) 用的**梗百科 / 黑话词典**插件。
 
