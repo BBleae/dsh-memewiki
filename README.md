@@ -2,16 +2,16 @@
 
 给 [DSH](https://dsh.deepseek.com) 用的**梗百科 / 黑话词典**插件。
 
-> ⚠️ **这是 DSH 插件，不是 AstrBot 插件。** 仓库里出现 `astrbot_plugin_memewiki` 字样，只是因为它是从那个 AstrBot 插件移植来的；装进 AstrBot 里不会生效。
+> ⚠️ **这是 DSH 插件，不是 AstrBot 插件。** 仓库里出现 `astrbot_plugin_memewiki` 字样，只是因为本项目的灵感来自那个 AstrBot 插件；装进 AstrBot 里不会生效。
 
-来源：AstrBot 插件 `astrbot_plugin_memewiki`（作者 in1t1a1）。原仓库已删除，所以这里不放链接——如果有人点进来发现 404，那是那个仓库，不是这个。
+致谢：灵感来自 AstrBot 插件 `astrbot_plugin_memewiki`（作者 in1t1a1），谢谢原作者提供的灵感。原仓库已删除，这里不放链接。
 
 内置 6792 条网络梗词条，查词离线可用、零依赖（只用 Node 自带的 `node:sqlite`）。
 
 当你问一句「XX 是什么梗」时，它会在模型看到这句话**之前**就把对应词条查好塞进上下文，让模型直接接梗；同时提供一个 `search_meme_wiki` 工具，让模型自己想查的时候也能查。
 
 > 作者：[@thawline](https://github.com/thawline)
-> 来源：AstrBot 插件 `astrbot_plugin_memewiki`（AstrBot 版，原仓库已删除）
+> 致谢：灵感来自 AstrBot 插件 `astrbot_plugin_memewiki`（原仓库已删除），感谢原作者
 
 
 ## 特性
@@ -107,9 +107,9 @@ node scripts/sync-cnmeme.mjs --no-existing # 只补新词条，不动已有条�
 
 ## 与原版的差异
 
-本插件是**重构移植**，不是逐行翻译。AstrBot 是 Python 的 Star 插件框架，DSH 是 Node.js 的插件体系，外壳必须重写；词库、匹配逻辑、预查闸门、注入文案沿用原版的设计。
+本插件是一次**独立实现**，不是逐行翻译。AstrBot 是 Python 的 Star 插件框架，DSH 是 Node.js 的插件体系，外壳必须重写；词库、匹配逻辑、预查闸门、注入文案这些设计受原版启发。
 
-| 能力 | 原版 `astrbot_plugin_memewiki` | 本插件 `dsh-memewiki` |
+| 能力 | 参考的 AstrBot 版 `astrbot_plugin_memewiki` | 本插件 `dsh-memewiki` |
 | --- | --- | --- |
 | 运行环境 | AstrBot（Python） | DSH（Node.js，ESM，零依赖） |
 | 词库读取 | SQLite（`sqlite3`） | `node:sqlite`（Node ≥ 22.13 自带） |
@@ -126,15 +126,17 @@ node scripts/sync-cnmeme.mjs --no-existing # 只补新词条，不动已有条�
 | 预查闸门 | 本地精确 → 像梗才联网 → 同词节流 → 缓存 | 本地匹配 + 像梗判断（问梗句式 / 裸词 / 停用词） |
 | 黑话自建 | `/黑话 词 释义` 命令 | 设置页新增词条（等价，但走界面） |
 
-### 为什么去掉联网兜底
+### 关于联网
 
-原版在本地查不到时会去 `cnmeme.wiki` 搜。移植时去掉了，原因：
+**预查注入永远不联网。** 原版在本地查不到时会去 cnmeme.wiki 搜；这里没有做，原因：
 
 1. **隐私**：联网意味着把用户的聊天片段发到第三方，梗查询往往带着上下文；
 2. **稳定**：外部 API 挂了就多一次失败路径，还要处理超时、缓存、节流；
 3. **够用**：6792 条覆盖了绝大多数常见梗，查不到时模型说「不知道」比编一个更安全。
 
 需要联网版的话，可以在设置页把「自动思考梗」关掉，改用 `search_meme_wiki` 工具自行决定何时查（工具同样只查本地库）。
+
+另外有两个**显式**的联网动作：设置页的「更新词库」和「提交新词条」。这两个只在你点了之后才连一次 cnmeme.wiki，平时不跑。
 
 ## 已知限制
 
@@ -144,4 +146,4 @@ node scripts/sync-cnmeme.mjs --no-existing # 只补新词条，不动已有条�
 
 ## 许可
 
-MIT。词库数据版权归原作者与 cnmeme.wiki；本项目仅做格式适配与功能移植，详见 `NOTICE`。
+MIT。词库数据版权归原项目与 cnmeme.wiki；本项目仅做格式适配，功能设计受原版启发，详见 `NOTICE`。

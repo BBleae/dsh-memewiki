@@ -1,7 +1,7 @@
 {
   "name": "dsh-memewiki",
   "version": "0.1.20",
-  "description": "梗百科：内置 6792 条梗/黑话词库，自动查梗并注入上下文，让模型认得群里的梗，不硬猜。移植自 AstrBot 的 astrbot_plugin_memewiki。",
+  "description": "梗百科：6792 条梗/黑话词库，自动查梗并注入上下文，不让模型硬猜。支持一键下载社区最新词库、提交新梗，与社区共创。",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
